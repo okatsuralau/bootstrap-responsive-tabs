@@ -4,7 +4,10 @@
     var settings = $.extend({
       // These are the defaults.
       minTabWidth: "80",
-      maxTabWidth: "150"
+      maxTabWidth: "150",
+      hiddenClass: "hidden",
+      moreTabsText: "More",
+      showCaret: false
     }, options );
 
     // Helper function to debounce window resize events
@@ -35,7 +38,7 @@
     this.each(function() {
 
       $container = $(this);
-      
+
       var ResponsiveTabs;
       ResponsiveTabs = (function () {
         function ResponsiveTabs() {
@@ -43,7 +46,7 @@
           TABS_OBJECT = this;
           TABS_OBJECT.activeTabId = 1;
           TABS_OBJECT.tabsHorizontalContainer = $container;
-          
+
           TABS_OBJECT.tabsHorizontalContainer.addClass("responsive-tabs").wrap("<div class='responsive-tabs-container clearfix'></div>");
 
           // Update tabs
@@ -53,6 +56,8 @@
 
             // Determine which tabs to show/hide
             var $tabs = TABS_OBJECT.tabsHorizontalContainer.children('li');
+            var $dropdown = TABS_OBJECT.tabsHorizontalContainer.siblings(".tabs-dropdown");
+
             $tabs.width("100%");
 
             // Set min and max widths for tabs
@@ -70,7 +75,7 @@
                   .css("max-width", settings.maxTabWidth + "px");
               });
             }
-            
+
             var defaultTabWidth = $tabs.first().width();
             var numTabs = $tabs.length;
 
@@ -83,8 +88,8 @@
               var verticalTab = TABS_OBJECT.tabsVerticalContainer.find(".js-tab[tab-id=" + tabId + "]");
               var isVisible = i < numVisibleHorizontalTabs;
 
-              horizontalTab.toggleClass('hidden', !isVisible);
-              verticalTab.toggleClass('hidden', isVisible);
+              horizontalTab.toggleClass(settings.hiddenClass, !isVisible);
+              verticalTab.toggleClass(settings.hiddenClass, isVisible);
             }
 
             // Set new dynamic width for each tab based on calculation above
@@ -94,8 +99,13 @@
 
             // Toggle the Tabs dropdown if there are more tabs than can fit in the tabs horizontal container
             var hasVerticalTabs = (numVisibleVerticalTabs > 0)
-            TABS_OBJECT.tabsVerticalContainer.toggleClass("hidden", !hasVerticalTabs)
-            TABS_OBJECT.tabsVerticalContainer.siblings(".dropdown-toggle").find(".count").text("Tabs " + "(" + numVisibleVerticalTabs + ")");
+            TABS_OBJECT.tabsVerticalContainer.toggleClass(settings.hiddenClass, !hasVerticalTabs)
+            TABS_OBJECT.tabsVerticalContainer.siblings(".dropdown-toggle").find(".count").text(settings.moreTabsText + " " + "(" + numVisibleVerticalTabs + ")");
+
+            // Hides the tab if there is no excessive tabs
+            if(!hasVerticalTabs && $dropdown.length > 0) {
+                $dropdown.addClass(settings.hiddenClass);
+            }
 
             // Make 'active' tab always visible in horizontal container
             // and hidden in vertical container
@@ -103,23 +113,23 @@
             activeTab = TABS_OBJECT.tabsHorizontalContainer.find(".js-tab[tab-id=" + TABS_OBJECT.activeTabId + "]");
             activeTabCurrentIndex = activeTab.index();
             activeTabDefaultIndex = activeTab.attr("tab-index");
-            lastVisibleHorizontalTab = TABS_OBJECT.tabsHorizontalContainer.find(".js-tab:visible").last(); 
+            lastVisibleHorizontalTab = TABS_OBJECT.tabsHorizontalContainer.find(".js-tab:visible").last();
             lastVisibleTabIndex = lastVisibleHorizontalTab.index()
 
-            lastHiddenVerticalTab = TABS_OBJECT.tabsVerticalContainer.find(".js-tab.hidden").last();
+            lastHiddenVerticalTab = TABS_OBJECT.tabsVerticalContainer.find(".js-tab." + settings.hiddenClass).last();
             activeVerticalTab = TABS_OBJECT.tabsVerticalContainer.find(".js-tab[tab-index=" + activeTabCurrentIndex + "]");
 
             if (activeTabCurrentIndex >= numVisibleHorizontalTabs) {
               activeTab.insertBefore(lastVisibleHorizontalTab);
-              activeTab.removeClass("hidden");
-              lastVisibleHorizontalTab.addClass("hidden");
+              activeTab.removeClass(settings.hiddenClass);
+              lastVisibleHorizontalTab.addClass(settings.hiddenClass);
 
-              lastHiddenVerticalTab.removeClass("hidden");
-              activeVerticalTab.addClass("hidden");
+              lastHiddenVerticalTab.removeClass(settings.hiddenClass);
+              activeVerticalTab.addClass(settings.hiddenClass);
             }
 
             if ((activeTabCurrentIndex < activeTabDefaultIndex) && (activeTabCurrentIndex < lastVisibleTabIndex)) {
-              activeTab.insertAfter(lastVisibleHorizontalTab);  
+              activeTab.insertAfter(lastVisibleHorizontalTab);
             }
           }
 
@@ -145,17 +155,17 @@
 
             // Attach a dropdown to the right of the tabs bar
             // This will be toggled if tabs can't fit in a given viewport size
-
-            TABS_OBJECT.tabsHorizontalContainer.after("<div class='nav navbar-nav navbar-right dropdown tabs-dropdown js-tabs-dropdown'> \
-              <a href='#' class='dropdown-toggle' data-toggle='dropdown'><span class='count'>Tabs </span><b class='caret'></b></a> \
-              <ul class='dropdown-menu' role='menu'> \
-              <div class='dropdown-header visible-xs'>\
-                <p class='count'>Tabs</p> \
-                <button type='button' class='close' data-dismiss='dropdown'><span aria-hidden='true'>&times;</span></button> \
-                <div class='divider visible-xs'></div> \
-              </div> \
-              </ul> \
-            </div>");
+            var caret = settings.showCaret ? "<b class='caret'></b>" : '';
+            var showMoreTabs = settings.showCaret ? "<b class='caret'></b>" : '';
+            TABS_OBJECT.tabsHorizontalContainer.after("<ul class='nav nav-tabs tabs-dropdown js-tabs-dropdown'> \
+                <li class='nav-item dropdown'> \
+                    <a href='#' class='nav-link dropdown-toggle' data-toggle='dropdown' role='button' aria-haspopup='true' aria-expanded='false'> \
+                        <span class='count'>" + settings.moreTabsText + " </span> \
+                        " + caret + " \
+                    </a> \
+                    <ul class='dropdown-menu dropdown-menu-right' role='menu'></ul> \
+                </li> \
+            </ul>");
 
             // Clone each tab into the dropdown
             TABS_OBJECT.tabsVerticalContainer = TABS_OBJECT.tabsHorizontalContainer.siblings(".tabs-dropdown").find(".dropdown-menu");
@@ -166,7 +176,7 @@
           }()
 
 
-          /** 
+          /**
            * Change Tab
            */
           change_tab = function (e) {
@@ -180,14 +190,14 @@
               // from dropdown. Otherwise Bootstrap handles the normal 'active' class placement.
               var verticalTabSelected = target.parents(".dropdown-menu").length > 0
               if (verticalTabSelected) {
-                TABS_OBJECT.tabsHorizontalContainer.find(".js-tab").removeClass("active");
-                TABS_OBJECT.tabsHorizontalContainer.find(".js-tab[tab-id=" + TABS_OBJECT.activeTabId + "]").addClass("active");
+                TABS_OBJECT.tabsHorizontalContainer.find(".nav-link").removeClass("active");
+                TABS_OBJECT.tabsHorizontalContainer.find(".js-tab[tab-id=" + TABS_OBJECT.activeTabId + "]").find(".nav-link").addClass("active");
               }
 
-              TABS_OBJECT.tabsVerticalContainer.find(".js-tab").removeClass("active");
-              
+              TABS_OBJECT.tabsVerticalContainer.find(".nav-link").removeClass("active");
+
               // Call 'sort_tabs' to re-arrange tabs based on their original index positions
-              // Call 'update_tabs' to resize tabs and determine which one to show/hide 
+              // Call 'update_tabs' to resize tabs and determine which one to show/hide
               sort_tabs(TABS_OBJECT.tabsHorizontalContainer);
               sort_tabs(TABS_OBJECT.tabsVerticalContainer);
               update_tabs();
