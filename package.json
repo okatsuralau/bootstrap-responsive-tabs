@@ -1,0 +1,22 @@
+{
+    "name": "bootstrap-responsive-tabs",
+    "version": "1.0.1",
+    "description": "Bootstrap Responsive Tabs is a jQuery plugin to make Bootstrap tabs more responsive and mobile friendly.",
+    "main": ["dist/bootstrap-responsive-tabs.js", "dist/main.css"],
+    "homepage": "http://home.golden.net/~tomescu/bootstrap-responsive-tabs/demo/",
+    "author": "Gabriel Tomescu <gabe@pushpulllabs.com>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/gabrieltomescu/bootstrap-responsive-tabs.git"
+    },
+    "keywords": [
+        "jquery",
+        "bootstrap",
+        "responsive",
+        "tabs"
+    ],
+    "bugs": {
+        "url": "https://github.com/gabrieltomescu/bootstrap-responsive-tabs/issues"
+    }
+}
